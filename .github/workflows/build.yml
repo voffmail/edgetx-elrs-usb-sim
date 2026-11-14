@@ -1,0 +1,70 @@
+name: build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PICO_SDK_VERSION: "2.3.1"
+  PICO_BOARD: pico2
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build git python3 \
+            gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+
+      - name: Cache Pico SDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/pico-sdk
+          key: pico-sdk-${{ env.PICO_SDK_VERSION }}
+
+      - name: Fetch Pico SDK
+        env:
+          PICO_SDK_PATH: ${{ runner.temp }}/pico-sdk
+        run: |
+          if [ ! -f "$PICO_SDK_PATH/pico_sdk_init.cmake" ]; then
+            git clone --branch "$PICO_SDK_VERSION" --depth 1 \
+              --recurse-submodules --shallow-submodules \
+              https://github.com/raspberrypi/pico-sdk.git "$PICO_SDK_PATH"
+          fi
+
+      - name: Configure
+        env:
+          PICO_SDK_PATH: ${{ runner.temp }}/pico-sdk
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DPICO_BOARD="$PICO_BOARD" \
+            -DPICO_SDK_PATH="$PICO_SDK_PATH" \
+            -DPICO_NO_PICOTOOL=1
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: edgetx-elrs-usb-sim-uf2
+          path: build/edgetx_elrs_usb_sim.uf2
+          if-no-files-found: error
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/edgetx_elrs_usb_sim.uf2
