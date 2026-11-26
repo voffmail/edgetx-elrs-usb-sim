@@ -55,7 +55,8 @@ def render(name, axes, buttons):
     for i in sorted(axes):
         label = AXIS_NAMES[i] if i < len(AXIS_NAMES) else f"A{i}"
         lines.append(f"{label:>8} [{bar(axes[i])}] {axes[i]:>7}")
-    pressed = "".join("#" if buttons.get(i) else "." for i in range(12))
+    count = (max(buttons) + 1) if buttons else 8
+    pressed = "".join("#" if buttons.get(i) else "." for i in range(count))
     lines.append("")
     lines.append("Buttons 1-12: " + pressed)
     lines.append("")
