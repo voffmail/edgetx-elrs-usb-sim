@@ -168,6 +168,14 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 - Симулятор, который понимает только XInput (Xbox-контроллеры), это устройство не увидит. FPV-симуляторы обычно читают DirectInput и работают.
 - Windows 10/11 не требуют драйверов. Windows 7 — отдельная история, лучше не использовать.
 
+На Linux то же самое видно без установки пакетов:
+
+```bash
+python3 tools/jsmon.py          # живая картинка осей и кнопок с /dev/input/js0
+```
+
+Либо графически через `jstest-gtk`, либо текстом `jstest /dev/input/js0` / `sudo evtest`.
+
 ### Если что-то не работает
 
 | Симптом | Что проверить |
@@ -175,7 +183,7 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 | В `joy.cpl` устройства нет | Прошивка записалась? Плата видна в Диспетчере устройств как HID-контроллер? Попробуйте другой USB-порт |
 | Устройство есть, оси стоят | Перепутаны TX/RX: `TX` приёмника → `GP29`; общий GND; в приёмнике включён CRSF |
 | Оси дёргаются | Плохой контакт, длинные провода, приёмник питается не от 5 В |
-| Кнопка зажата, хотя канал не используется | ExpressLRS присылает 2047 (0x7FF) для каналов, которых нет в модели; прошивка считает такие значения центром. Если кнопка всё равно нажата — в модели пульта на этом канале стоит +100% |
+| Все кнопки всегда нажаты | Каналы AUX стоят в максимуме или перепутаны каналы в модели |
 | Тангаж в симуляторе наоборот | Так и задумано (инверсия pitch). Уберите минус в `report->y` в `src/main.c`, если нужно иначе |
 | Симулятор не видит устройство | Отключите Steam Input; проверьте, что игра читает DirectInput, а не только XInput |
 | Приёмник не биндится | Диапазон и протокол модуля и приёмника должны совпадать; проверьте bind phrase |
@@ -385,6 +393,14 @@ Notes:
 - A simulator that only speaks XInput (Xbox controllers) will not see this device. FPV simulators normally use DirectInput and work fine.
 - Windows 10/11 need no drivers. Windows 7 is a different story and is not recommended.
 
+On Linux the same view works without installing anything:
+
+```bash
+python3 tools/jsmon.py          # live axes and buttons from /dev/input/js0
+```
+
+Alternatively use `jstest-gtk` graphically, or `jstest /dev/input/js0` / `sudo evtest` in a terminal.
+
 ### Troubleshooting
 
 | Symptom | What to check |
@@ -392,7 +408,7 @@ Notes:
 | Device absent in `joy.cpl` | Was the firmware actually flashed? Is the board visible as an HID controller in Device Manager? Try another USB port |
 | Device present, axes do not move | TX/RX swapped: receiver `TX` goes to `GP29`; common ground; CRSF selected in the receiver |
 | Axes jitter | Bad solder joint, long wires, receiver powered from something other than 5 V |
-| A button is stuck even though the channel is unused | ExpressLRS sends 2047 (0x7FF) for channels the radio does not transmit; the firmware treats such values as center. If the button is still on, the model drives that channel to +100% |
+| All buttons always pressed | AUX channels are at maximum, or channels are mapped wrong in the model |
 | Pitch works backwards in the sim | This is intentional (pitch inversion). Remove the minus in `report->y` in `src/main.c` if you need it the other way |
 | Simulator does not see the device | Disable Steam Input; check that the game reads DirectInput, not XInput only |
 | Receiver does not bind | TX module and receiver must use the same band and protocol; check the bind phrase |
