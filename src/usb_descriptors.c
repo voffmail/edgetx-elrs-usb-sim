@@ -57,7 +57,10 @@ static const uint8_t s_configuration[] = {
     TUD_HID_DESCRIPTOR(0, 0, false, sizeof(s_report_descriptor), 0x81, 8, 1),
 };
 
+/* Index 0 is reserved for the LANGID descriptor, so string indexes start at 1:
+ * 1 = iManufacturer, 2 = iProduct, 3 = iSerialNumber. */
 static const char *s_strings[] = {
+    "",
     "CRSF",
     "EdgeTX ELRS USB SIM",
     "0001",
