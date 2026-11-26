@@ -62,6 +62,19 @@ static bool address_is_valid(uint8_t address)
     return false;
 }
 
+/* ExpressLRS uses 0x7FF (2047) for channels the radio does not transmit:
+ * its CRSF_CHANNEL_VALUE_UNSET (0xFFFF) marker truncated to 11 bits. Any
+ * value outside the CRSF range is treated as "no channel" and centered,
+ * otherwise such a channel would look like a permanently pressed button. */
+static void sanitize_channels(uint16_t *channels)
+{
+    for (int i = 0; i < CRSF_CHANNEL_COUNT; i++) {
+        if (channels[i] < CRSF_CHANNEL_MIN || channels[i] > CRSF_CHANNEL_MAX) {
+            channels[i] = CRSF_CHANNEL_CENTER;
+        }
+    }
+}
+
 static void handle_frame(void)
 {
     const uint8_t length = s_frame[1];
@@ -77,6 +90,7 @@ static void handle_frame(void)
     }
 
     unpack_channels(&body[1], s_state.channels);
+    sanitize_channels(s_state.channels);
     s_state.last_frame_ms = to_ms_since_boot(get_absolute_time());
     s_state.failsafe = false;
 }
