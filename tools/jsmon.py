@@ -58,7 +58,7 @@ def render(name, axes, buttons):
     count = (max(buttons) + 1) if buttons else 8
     pressed = "".join("#" if buttons.get(i) else "." for i in range(count))
     lines.append("")
-    lines.append("Buttons 1-12: " + pressed)
+    lines.append(f"Buttons 1-{count}: " + pressed)
     lines.append("")
     lines.append("Ctrl+C — выход")
     return "\x1b[H" + "\n".join(line.ljust(70) for line in lines) + "\x1b[J"
