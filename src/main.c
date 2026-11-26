@@ -2,6 +2,7 @@
 #include "tusb.h"
 
 #include "crsf.h"
+#include "led.h"
 #include "usb_descriptors.h"
 
 #define CRSF_UART uart1
@@ -75,12 +76,14 @@ int main(void)
 {
     crsf_init(CRSF_UART, CRSF_RX_PIN, CRSF_TX_PIN);
     tud_init(BOARD_TUD_RHPORT);
+    led_init();
 
     absolute_time_t next_send = make_timeout_time_ms(1);
 
     while (true) {
         tud_task();
         crsf_task();
+        led_task(crsf_get_state());
 
         if (time_reached(next_send)) {
             next_send = make_timeout_time_ms(1);

@@ -28,8 +28,11 @@ pico_sdk_init()
 add_executable(edgetx_elrs_usb_sim
     src/main.c
     src/crsf.c
+    src/led.c
     src/usb_descriptors.c
 )
+
+pico_generate_pio_header(edgetx_elrs_usb_sim ${CMAKE_CURRENT_LIST_DIR}/src/ws2812.pio)
 
 target_include_directories(edgetx_elrs_usb_sim PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
@@ -40,6 +43,7 @@ target_link_libraries(edgetx_elrs_usb_sim
     pico_stdlib
     hardware_uart
     hardware_irq
+    hardware_pio
     tinyusb_device
 )
 

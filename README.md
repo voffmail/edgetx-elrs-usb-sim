@@ -140,6 +140,18 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 
 Кнопка считается нажатой, когда канал выше центра на 150 мкс, и отпускается ниже центра на 50 мкс — так тумблеры не дребезжат на границе.
 
+### Индикация
+
+На плате стоит адресный светодиод WS2812: на этой ревизии он подключён к `GP22`, у эталонной RP2350-USB-A — к `GP16`. Прошивка показывает им состояние радиолинка:
+
+| Состояние | Что видно |
+|---|---|
+| Потока CRSF нет: приёмник не забинжен, пульт выключен, обрыв связи | синий светодиод плавно разгорается и гаснет, полный цикл 2 с |
+| Поток CRSF идёт | ровный зелёный |
+| Двигаются стики | частое мигание, пока стики двигаются и ещё 0.3 с после остановки |
+
+Если на вашей ревизии платы светодиод подключён к другому выводу, поменяйте `LED_PIN` в `src/led.h`. Яркость и цвета — константы `FADE_MAX_LEVEL`, `LINK_*`, `BLINK_*` в `src/led.c`; там же порог реакции на движение стика (`MOVE_DELTA`) и время удержания мигания (`MOVE_HOLD_MS`).
+
 ### Windows и симулятор
 
 1. Подключите плату с приёмником к ПК.
@@ -172,6 +184,7 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 - Пороги кнопок — `BUTTON_PRESS_OFFSET`, `BUTTON_RELEASE_OFFSET`.
 - USB-дескриптор, 4 оси и 12 кнопок — `src/usb_descriptors.c`.
 - Таймаут связи и разбор CRSF — `src/crsf.c`.
+- Индикация: пин светодиода — `LED_PIN` в `src/led.h`, цвета и тайминги — `src/led.c`.
 
 ### Структура репозитория
 
@@ -182,6 +195,8 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 ├── src/
 │   ├── main.c                  раскладка каналов, кнопки, failsafe
 │   ├── crsf.c / crsf.h         UART, CRC, разбор кадров CRSF
+│   ├── led.c / led.h           индикация на WS2812
+│   ├── ws2812.pio              PIO-программа для WS2812
 │   └── usb_descriptors.c/.h    USB HID: 4 оси + 12 кнопок
 ├── tools/
 │   ├── setup-toolchain.ps1     локальный тулчейн для Windows
@@ -339,6 +354,18 @@ CI: `.github/workflows/build.yml` builds the firmware on every push and pull req
 
 A button is pressed when its channel is 150 µs above center and released when it drops 50 µs below center, so switches do not chatter at the threshold.
 
+### Status LED
+
+The board has an addressable WS2812 LED: on this revision it is wired to `GP22`, on the RP2350-USB-A reference board it is `GP16`. The firmware reports the link state with it:
+
+| State | What you see |
+|---|---|
+| No CRSF stream: receiver not bound, radio off, link lost | blue LED fades in and out, 2 s per full cycle |
+| CRSF stream present | steady green |
+| Sticks moving | fast blink while the sticks move and for 0.3 s after they stop |
+
+If your board revision wires the LED to another pin, change `LED_PIN` in `src/led.h`. Brightness and colors are the `FADE_MAX_LEVEL`, `LINK_*` and `BLINK_*` constants in `src/led.c`, which also holds the movement threshold (`MOVE_DELTA`) and the blink hold time (`MOVE_HOLD_MS`).
+
 ### Windows and simulator
 
 1. Plug the board with the receiver into the PC.
@@ -371,6 +398,7 @@ Notes:
 - Button thresholds — `BUTTON_PRESS_OFFSET`, `BUTTON_RELEASE_OFFSET`.
 - USB descriptor, 4 axes and 12 buttons — `src/usb_descriptors.c`.
 - Link timeout and CRSF parsing — `src/crsf.c`.
+- Status LED: pin — `LED_PIN` in `src/led.h`, colors and timings — `src/led.c`.
 
 ### Repository layout
 
@@ -381,6 +409,8 @@ Notes:
 ├── src/
 │   ├── main.c                  channel mapping, buttons, failsafe
 │   ├── crsf.c / crsf.h         UART, CRC, CRSF frame parsing
+│   ├── led.c / led.h           WS2812 status indication
+│   ├── ws2812.pio              PIO program for the WS2812 LED
 │   └── usb_descriptors.c/.h    USB HID: 4 axes + 12 buttons
 ├── tools/
 │   ├── setup-toolchain.ps1     local toolchain for Windows
