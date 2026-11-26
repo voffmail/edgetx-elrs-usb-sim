@@ -26,5 +26,5 @@ cmake --build "$BUILD_PATH"
 cp "$BUILD_PATH/edgetx_elrs_usb_sim.uf2" "$ROOT/edgetx_elrs_usb_sim.uf2"
 
 echo
-echo "Р“РѕС‚РѕРІРѕ: $ROOT/edgetx_elrs_usb_sim.uf2"
-echo "РџСЂРѕС€РёРІРєР°: Р·Р°Р¶Р°С‚СЊ BOOT, РїРѕРґРєР»СЋС‡РёС‚СЊ USB, СЃРєРѕРїРёСЂРѕРІР°С‚СЊ UF2 РЅР° РґРёСЃРє RP2350."
+echo "Готово: $ROOT/edgetx_elrs_usb_sim.uf2"
+echo "Прошивка: зажать BOOT, подключить USB, скопировать UF2 на диск RP2350."

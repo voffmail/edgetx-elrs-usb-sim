@@ -9,7 +9,7 @@ if(NOT DEFINED PICO_SDK_PATH)
 endif()
 
 if(NOT DEFINED PICO_SDK_PATH)
-    message(FATAL_ERROR "PICO_SDK_PATH РЅРµ Р·Р°РґР°РЅ. Р—Р°РїСѓСЃС‚Рё tools/setup-toolchain.ps1 РёР»Рё tools/setup-toolchain.sh")
+    message(FATAL_ERROR "PICO_SDK_PATH не задан. Запусти tools/setup-toolchain.ps1 или tools/setup-toolchain.sh")
 endif()
 
 if(NOT DEFINED PICO_BOARD)
