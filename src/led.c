@@ -21,10 +21,10 @@
 #define LINK_B 0
 
 /* Axes moving: fast blink. */
-#define BLINK_HALF_PERIOD_MS 80
+#define BLINK_HALF_PERIOD_MS 27
 #define BLINK_R 0
-#define BLINK_G 96
-#define BLINK_B 96
+#define BLINK_G 48
+#define BLINK_B 48
 
 /* Keep blinking this long after the last stick movement. */
 #define MOVE_HOLD_MS 300
