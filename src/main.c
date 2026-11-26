@@ -69,7 +69,7 @@ static void build_report(hid_report_t *report, const crsf_state_t *state)
         }
     }
     s_buttons = buttons;
-    report->buttons = buttons;
+    report->buttons = (hid_buttons_t)buttons;
 }
 
 int main(void)

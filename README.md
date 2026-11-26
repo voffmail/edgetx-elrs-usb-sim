@@ -8,7 +8,7 @@
 
 ![Плата RP2350-USB](docs/rp2350-usb.webp)
 
-Плата читает каналы ELRS-приёмника по протоколу CRSF и отдаёт их компьютеру как обычный USB-геймпад: 4 оси и 12 кнопок. Пульт остаётся беспроводным, кабель идёт только от маленькой платы к ПК. Никаких Bluetooth-донглов, драйверов и Betaflight-полётников.
+Плата читает каналы ELRS-приёмника по протоколу CRSF и отдаёт их компьютеру как обычный USB-геймпад: 4 оси и 8 кнопок. Пульт остаётся беспроводным, кабель идёт только от маленькой платы к ПК. Никаких Bluetooth-донглов, драйверов и Betaflight-полётников.
 
 Подходит для Liftoff, Velocidrone, DRL Sim, Uncrashed, Tryp FPV, FPV Freerider и других симуляторов, которые видят DirectInput-джойстик.
 
@@ -30,7 +30,7 @@ flowchart LR
   MCU -- "USB HID gamepad" --> PC["ПК / симулятор"]
 ```
 
-Приёмник выдаёт кадры CRSF на скорости 420 кбит/с. Плата разбирает их, берёт 16 каналов и отправляет в USB отчёт: 4 оси (roll, pitch, throttle, yaw) и 12 кнопок из AUX-каналов. Если радиосвязь пропала дольше 500 мс, плата отпускает кнопки и ставит оси в центр.
+Приёмник выдаёт кадры CRSF на скорости 420 кбит/с. Плата разбирает их, берёт 16 каналов и отправляет в USB отчёт: 4 оси (roll, pitch, throttle, yaw) и 8 кнопок из AUX-каналов. Если радиосвязь пропала дольше 500 мс, плата отпускает кнопки и ставит оси в центр.
 
 ### Что нужно купить
 
@@ -128,7 +128,7 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 1. В EdgeTX создайте модель (или возьмите существующую) с ELRS-модулем в том же диапазоне, что приёмник.
 2. Забиндите приёмник: по bind phrase в модуле и приёмнике либо кнопкой на приёмнике.
 3. Убедитесь, что порядок каналов в модели — **AETR**: 1 — roll, 2 — pitch, 3 — throttle, 4 — yaw. Это дефолт EdgeTX.
-4. Разложите тумблеры и кнопки по каналам 5–16: они станут кнопками 1–12 в USB-отчёте.
+4. Разложите тумблеры и кнопки по каналам 5–12: они станут кнопками 1–8 в USB-отчёте.
 5. Проверьте в меню каналов, что каждый тумблер реально меняет свой канал (около 1000 и 2000 мкс).
 
 ### Раскладка каналов
@@ -139,7 +139,10 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 | 2 | Pitch | ось Y (инвертируется в прошивке) |
 | 3 | Throttle | ось Z |
 | 4 | Yaw | ось Rx |
-| 5–16 | AUX1–AUX12 | кнопки 1–12 |
+| 5–12 | AUX1–AUX8 | кнопки 1–8 |
+| 13–16 | — | не выводятся |
+
+Каналы 13–16 в кнопки не попадают: ExpressLRS держит на них арм и служебные данные. Если ваша модель правда отдаёт 13–16, поднимите `HID_BUTTON_COUNT` до 12 в `src/usb_descriptors.h`.
 
 Кнопка считается нажатой, когда канал выше центра на 150 мкс, и отпускается ниже центра на 50 мкс — так тумблеры не дребезжат на границе.
 
@@ -193,7 +196,7 @@ python3 tools/jsmon.py          # живая картинка осей и кно
 - Пины UART — `src/main.c`, константы `CRSF_UART`, `CRSF_RX_PIN`, `CRSF_TX_PIN`.
 - Порядок каналов — `CH_ROLL`, `CH_PITCH`, `CH_THROTTLE`, `CH_YAW`.
 - Пороги кнопок — `BUTTON_PRESS_OFFSET`, `BUTTON_RELEASE_OFFSET`.
-- USB-дескриптор, 4 оси и 12 кнопок — `src/usb_descriptors.c`.
+- USB-дескриптор, 4 оси и 8 кнопок — `src/usb_descriptors.c`, число кнопок — `HID_BUTTON_COUNT` в `src/usb_descriptors.h`.
 - Таймаут связи и разбор CRSF — `src/crsf.c`.
 - Индикация: пин светодиода — `LED_PIN` в `src/led.h`, цвета и тайминги — `src/led.c`.
 
@@ -208,7 +211,7 @@ python3 tools/jsmon.py          # живая картинка осей и кно
 │   ├── crsf.c / crsf.h         UART, CRC, разбор кадров CRSF
 │   ├── led.c / led.h           индикация на WS2812
 │   ├── ws2812.pio              PIO-программа для WS2812
-│   └── usb_descriptors.c/.h    USB HID: 4 оси + 12 кнопок
+│   └── usb_descriptors.c/.h    USB HID: 4 оси + 8 кнопок
 ├── tools/
 │   ├── setup-toolchain.ps1     локальный тулчейн для Windows
 │   ├── build.ps1               сборка одной командой
@@ -222,7 +225,8 @@ python3 tools/jsmon.py          # живая картинка осей и кно
 ### Ограничения
 
 - Только приёмники с выходом **CRSF**; SBUS/PWM не поддерживаются.
-- Жёстко заданы 4 оси и 12 кнопок. Дополнительные крутилки как оси не выводятся — только кнопками.
+- Жёстко заданы 4 оси; кнопок по умолчанию 8 (`HID_BUTTON_COUNT` в `src/usb_descriptors.h`, можно поднять до 12).
+- Каналы 13–16 по умолчанию не выводятся: ExpressLRS занимает их армом и служебными данными, а каналы, которых нет в модели, приходят как 2047.
 - Телеметрия CRSF (уровень сигнала) не передаётся в ПК.
 - USB у RP2350 — Full Speed, поллинг 1 мс. Для джойстика этого достаточно.
 - Прошивка собрана и проверена на уровне сборки и формата UF2, но на реальном железе пока не запускалась. Если что-то не работает — issue или PR приветствуются.
@@ -233,7 +237,7 @@ python3 tools/jsmon.py          # живая картинка осей и кно
 
 ![RP2350-USB board](docs/rp2350-usb.webp)
 
-The board reads channel data from an ExpressLRS receiver over CRSF and presents it to a computer as an ordinary USB gamepad: 4 axes and 12 buttons. The radio stays wireless, the only cable goes from a tiny board to the PC. No Bluetooth dongles, no drivers, no Betaflight flight controller.
+The board reads channel data from an ExpressLRS receiver over CRSF and presents it to a computer as an ordinary USB gamepad: 4 axes and 8 buttons. The radio stays wireless, the only cable goes from a tiny board to the PC. No Bluetooth dongles, no drivers, no Betaflight flight controller.
 
 Works with Liftoff, Velocidrone, DRL Sim, Uncrashed, Tryp FPV, FPV Freerider and any other simulator that accepts a DirectInput joystick.
 
@@ -255,7 +259,7 @@ flowchart LR
   MCU -- "USB HID gamepad" --> PC["PC / simulator"]
 ```
 
-The receiver outputs CRSF frames at 420 kbit/s. The board parses them, takes 16 channels and sends a USB report: 4 axes (roll, pitch, throttle, yaw) and 12 buttons derived from the AUX channels. If the radio link is lost for more than 500 ms, the board releases all buttons and centers the axes.
+The receiver outputs CRSF frames at 420 kbit/s. The board parses them, takes 16 channels and sends a USB report: 4 axes (roll, pitch, throttle, yaw) and 8 buttons derived from the AUX channels. If the radio link is lost for more than 500 ms, the board releases all buttons and centers the axes.
 
 ### What to buy
 
@@ -353,7 +357,7 @@ CI: `.github/workflows/build.yml` builds the firmware on every push and pull req
 1. In EdgeTX create a model (or use an existing one) with an ELRS module on the same band as the receiver.
 2. Bind the receiver: via a bind phrase in both the module and the receiver, or with the receiver's bind button.
 3. Make sure the channel order in the model is **AETR**: 1 — roll, 2 — pitch, 3 — throttle, 4 — yaw. This is the EdgeTX default.
-4. Assign switches and buttons to channels 5–16; they become buttons 1–12 in the USB report.
+4. Assign switches and buttons to channels 5–12; they become buttons 1–8 in the USB report.
 5. Check in the channel monitor that each switch actually drives its channel (around 1000 and 2000 µs).
 
 ### Channel map
@@ -364,7 +368,10 @@ CI: `.github/workflows/build.yml` builds the firmware on every push and pull req
 | 2 | Pitch | Y axis (inverted in firmware) |
 | 3 | Throttle | Z axis |
 | 4 | Yaw | Rx axis |
-| 5–16 | AUX1–AUX12 | buttons 1–12 |
+| 5–12 | AUX1–AUX8 | buttons 1–8 |
+| 13–16 | — | not exposed |
+
+Channels 13–16 are not mapped to buttons: ExpressLRS keeps arming and service data there. If your model really drives 13–16, raise `HID_BUTTON_COUNT` to 12 in `src/usb_descriptors.h`.
 
 A button is pressed when its channel is 150 µs above center and released when it drops 50 µs below center, so switches do not chatter at the threshold.
 
@@ -418,7 +425,7 @@ Alternatively use `jstest-gtk` graphically, or `jstest /dev/input/js0` / `sudo e
 - UART pins — `src/main.c`, constants `CRSF_UART`, `CRSF_RX_PIN`, `CRSF_TX_PIN`.
 - Channel order — `CH_ROLL`, `CH_PITCH`, `CH_THROTTLE`, `CH_YAW`.
 - Button thresholds — `BUTTON_PRESS_OFFSET`, `BUTTON_RELEASE_OFFSET`.
-- USB descriptor, 4 axes and 12 buttons — `src/usb_descriptors.c`.
+- USB descriptor, 4 axes and 8 buttons — `src/usb_descriptors.c`, button count — `HID_BUTTON_COUNT` in `src/usb_descriptors.h`.
 - Link timeout and CRSF parsing — `src/crsf.c`.
 - Status LED: pin — `LED_PIN` in `src/led.h`, colors and timings — `src/led.c`.
 
@@ -433,7 +440,7 @@ Alternatively use `jstest-gtk` graphically, or `jstest /dev/input/js0` / `sudo e
 │   ├── crsf.c / crsf.h         UART, CRC, CRSF frame parsing
 │   ├── led.c / led.h           WS2812 status indication
 │   ├── ws2812.pio              PIO program for the WS2812 LED
-│   └── usb_descriptors.c/.h    USB HID: 4 axes + 12 buttons
+│   └── usb_descriptors.c/.h    USB HID: 4 axes + 8 buttons
 ├── tools/
 │   ├── setup-toolchain.ps1     local toolchain for Windows
 │   ├── build.ps1               one-command build
@@ -447,7 +454,8 @@ Alternatively use `jstest-gtk` graphically, or `jstest /dev/input/js0` / `sudo e
 ### Limitations
 
 - CRSF receivers only; SBUS and PWM are not supported.
-- The report is fixed at 4 axes and 12 buttons. Extra knobs are exposed as buttons, not axes.
+- The report is fixed at 4 axes; buttons are 8 by default (`HID_BUTTON_COUNT` in `src/usb_descriptors.h`, up to 12).
+- Channels 13–16 are not exposed by default: ExpressLRS uses them for arming and service data, and channels the radio does not transmit arrive as 2047.
 - CRSF telemetry (link quality) is not forwarded to the PC.
 - RP2350 USB is Full Speed with 1 ms polling, which is plenty for a gamepad.
 - The firmware builds and the UF2 format is verified, but it has not been tested on real hardware yet. Issues and pull requests are welcome.

@@ -26,30 +26,32 @@ static const tusb_desc_device_t s_device = {
 };
 
 static const uint8_t s_report_descriptor[] = {
-    0x05, 0x01,
-    0x09, 0x04,
-    0xA1, 0x01,
-    0x15, 0x81,
-    0x25, 0x7F,
-    0x75, 0x08,
-    0x95, 0x04,
-    0x09, 0x30,
-    0x09, 0x31,
-    0x09, 0x32,
-    0x09, 0x33,
-    0x81, 0x02,
-    0x05, 0x09,
-    0x19, 0x01,
-    0x29, 0x0C,
-    0x15, 0x00,
-    0x25, 0x01,
-    0x75, 0x01,
-    0x95, 0x0C,
-    0x81, 0x02,
-    0x75, 0x04,
-    0x95, 0x01,
-    0x81, 0x03,
-    0xC0,
+    0x05, 0x01,                     /* Usage Page (Generic Desktop) */
+    0x09, 0x04,                     /* Usage (Joystick) */
+    0xA1, 0x01,                     /* Collection (Application) */
+    0x15, 0x81,                     /* Logical Minimum (-127) */
+    0x25, 0x7F,                     /* Logical Maximum (127) */
+    0x75, 0x08,                     /* Report Size (8) */
+    0x95, 0x04,                     /* Report Count (4) */
+    0x09, 0x30,                     /* Usage (X) */
+    0x09, 0x31,                     /* Usage (Y) */
+    0x09, 0x32,                     /* Usage (Z) */
+    0x09, 0x33,                     /* Usage (Rx) */
+    0x81, 0x02,                     /* Input (Data, Variable, Absolute) */
+    0x05, 0x09,                     /* Usage Page (Button) */
+    0x19, 0x01,                     /* Usage Minimum (Button 1) */
+    0x29, HID_BUTTON_COUNT,         /* Usage Maximum */
+    0x15, 0x00,                     /* Logical Minimum (0) */
+    0x25, 0x01,                     /* Logical Maximum (1) */
+    0x75, 0x01,                     /* Report Size (1) */
+    0x95, HID_BUTTON_COUNT,         /* Report Count */
+    0x81, 0x02,                     /* Input (Data, Variable, Absolute) */
+#if (HID_BUTTON_COUNT % 8) != 0
+    0x75, 8 - (HID_BUTTON_COUNT % 8), /* Report Size (padding bits) */
+    0x95, 0x01,                     /* Report Count (1) */
+    0x81, 0x03,                     /* Input (Constant, Variable, Absolute) */
+#endif
+    0xC0,                           /* End Collection */
 };
 
 static const uint8_t s_configuration[] = {
