@@ -5,9 +5,9 @@
 #include "led.h"
 #include "usb_descriptors.h"
 
-#define CRSF_UART uart1
-#define CRSF_RX_PIN 5
-#define CRSF_TX_PIN 4
+#define CRSF_UART uart0
+#define CRSF_RX_PIN 29
+#define CRSF_TX_PIN 28
 
 #define CH_ROLL 0
 #define CH_PITCH 1

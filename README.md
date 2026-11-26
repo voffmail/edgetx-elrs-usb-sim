@@ -26,7 +26,7 @@
 ```mermaid
 flowchart LR
   TX["Пульт EdgeTX<br/>ELRS TX-модуль"] -- "CRSF по воздуху" --> RX["ELRS-приёмник<br/>выход CRSF UART"]
-  RX -- "5V, GND, TX → GP5" --> MCU["RP2350-USB"]
+  RX -- "5V, GND, TX → GP29" --> MCU["RP2350-USB"]
   MCU -- "USB HID gamepad" --> PC["ПК / симулятор"]
 ```
 
@@ -50,7 +50,7 @@ flowchart LR
 |---|---|
 | `5V` | `5V` (VBUS с USB-разъёма) |
 | `G` (GND) | `GND` |
-| `TX` | `GP5` (UART1 RX) |
+| `TX` | `GP29` (UART0 RX) |
 | `RX` | не подключать |
 
 Важно:
@@ -61,16 +61,19 @@ flowchart LR
 - Питание 5 В плата получает из USB-порта. Если на вашей ревизии платы нет площадки `5V`, питайте приёмник от отдельного 5 В, но GND всё равно соедините.
 - Антенну приёмника не прижимайте к плате и USB-разъёму.
 - Цвета проводов у клонов произвольные: ориентируйтесь на подписи `RX`, `TX`, `5V`, `G` на плате приёмника, а не на фото.
+- Номера на площадках клонов — это номера GPIO: площадка `29` это GP29, `28` — GP28.
 
 Пины по умолчанию заданы в `src/main.c`:
 
 ```c
-#define CRSF_UART uart1
-#define CRSF_RX_PIN 5
-#define CRSF_TX_PIN 4
+#define CRSF_UART uart0
+#define CRSF_RX_PIN 29
+#define CRSF_TX_PIN 28
 ```
 
 Если на вашей плате удобнее другие выводы — поменяйте их. TX-пин не используется, но должен указывать на существующий GPIO.
+
+Подойдёт любой вывод, у которого есть нужный UART: прошивка выбирает функцию через `UART_FUNCSEL_NUM`, включая альтернативную `GPIO_FUNC_UART_AUX`. Учтите, что у RP2350-USB-A и клонов на гребёнку выведены GP0–GP10 и GP26–GP29, а вывод светодиода (GP22 на этой ревизии, GP16 у эталонной платы) наружу не выходит. Из правой группы площадок (26–29) принимать CRSF умеет только **GP29**: `GP26`, `GP27`, `GP28` дают UART только на передачу (или через альтернативную функцию), а `GP28` — это UART0 TX. Поэтому по умолчанию RX = GP29, а GP28 указан как неиспользуемый TX.
 
 ### Прошивка
 
@@ -170,7 +173,7 @@ CI: `.github/workflows/build.yml` собирает прошивку на каж�
 | Симптом | Что проверить |
 |---|---|
 | В `joy.cpl` устройства нет | Прошивка записалась? Плата видна в Диспетчере устройств как HID-контроллер? Попробуйте другой USB-порт |
-| Устройство есть, оси стоят | Перепутаны TX/RX: `TX` приёмника → `GP5`; общий GND; в приёмнике включён CRSF |
+| Устройство есть, оси стоят | Перепутаны TX/RX: `TX` приёмника → `GP29`; общий GND; в приёмнике включён CRSF |
 | Оси дёргаются | Плохой контакт, длинные провода, приёмник питается не от 5 В |
 | Все кнопки всегда нажаты | Каналы AUX стоят в максимуме или перепутаны каналы в модели |
 | Тангаж в симуляторе наоборот | Так и задумано (инверсия pitch). Уберите минус в `report->y` в `src/main.c`, если нужно иначе |
@@ -240,7 +243,7 @@ This project keeps the radio link you already fly with and turns it into a norma
 ```mermaid
 flowchart LR
   TX["EdgeTX radio<br/>ELRS TX module"] -- "CRSF over the air" --> RX["ELRS receiver<br/>CRSF UART output"]
-  RX -- "5V, GND, TX to GP5" --> MCU["RP2350-USB"]
+  RX -- "5V, GND, TX to GP29" --> MCU["RP2350-USB"]
   MCU -- "USB HID gamepad" --> PC["PC / simulator"]
 ```
 
@@ -264,7 +267,7 @@ The receiver outputs CRSF frames at 420 kbit/s. The board parses them, takes 16 
 |---|---|
 | `5V` | `5V` (VBUS from the USB plug) |
 | `G` (GND) | `GND` |
-| `TX` | `GP5` (UART1 RX) |
+| `TX` | `GP29` (UART0 RX) |
 | `RX` | leave unconnected |
 
 Notes:
@@ -275,16 +278,19 @@ Notes:
 - The board gets 5 V from the USB port. If your board revision has no `5V` pad, power the receiver from an external 5 V source and keep the grounds connected.
 - Keep the receiver antenna away from the board and the USB plug.
 - Wire colors on clones are arbitrary. Follow the `RX`, `TX`, `5V`, `G` labels on the receiver, not the photo.
+- The numbers printed next to the pads on clones are GPIO numbers: pad `29` is GP29, `28` is GP28.
 
 Default pins are set in `src/main.c`:
 
 ```c
-#define CRSF_UART uart1
-#define CRSF_RX_PIN 5
-#define CRSF_TX_PIN 4
+#define CRSF_UART uart0
+#define CRSF_RX_PIN 29
+#define CRSF_TX_PIN 28
 ```
 
 Change them if other pins are more convenient on your board. The TX pin is unused but must point to a valid GPIO.
+
+Any pin with the right UART function works: the firmware picks the function via `UART_FUNCSEL_NUM`, including the alternate `GPIO_FUNC_UART_AUX`. Note that RP2350-USB-A and its clones only bring out GP0–GP10 and GP26–GP29, and the LED pin (GP22 on this revision, GP16 on the reference board) is not exposed. In the 26–29 group only **GP29** can receive CRSF: `GP26`, `GP27` and `GP28` only provide UART transmit (or require the alternate function), and `GP28` is UART0 TX. That is why RX defaults to GP29 and GP28 is listed as the unused TX.
 
 ### Flashing
 
@@ -384,7 +390,7 @@ Notes:
 | Symptom | What to check |
 |---|---|
 | Device absent in `joy.cpl` | Was the firmware actually flashed? Is the board visible as an HID controller in Device Manager? Try another USB port |
-| Device present, axes do not move | TX/RX swapped: receiver `TX` goes to `GP5`; common ground; CRSF selected in the receiver |
+| Device present, axes do not move | TX/RX swapped: receiver `TX` goes to `GP29`; common ground; CRSF selected in the receiver |
 | Axes jitter | Bad solder joint, long wires, receiver powered from something other than 5 V |
 | All buttons always pressed | AUX channels are at maximum, or channels are mapped wrong in the model |
 | Pitch works backwards in the sim | This is intentional (pitch inversion). Remove the minus in `report->y` in `src/main.c` if you need it the other way |

@@ -130,8 +130,8 @@ void crsf_init(uart_inst_t *uart, unsigned rx_pin, unsigned tx_pin)
     s_state.failsafe = true;
 
     uart_init(uart, CRSF_BAUD);
-    gpio_set_function(rx_pin, GPIO_FUNC_UART);
-    gpio_set_function(tx_pin, GPIO_FUNC_UART);
+    gpio_set_function(rx_pin, UART_FUNCSEL_NUM(uart, rx_pin));
+    gpio_set_function(tx_pin, UART_FUNCSEL_NUM(uart, tx_pin));
     uart_set_format(uart, 8, 1, UART_PARITY_NONE);
     uart_set_fifo_enabled(uart, true);
 
