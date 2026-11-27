@@ -136,6 +136,10 @@ python3 tools/jsmon.py
 
 Сборка из исходников, настройки в коде и внутреннее устройство — в [develop.md](develop.md).
 
+### Поддержка проекта
+
+Задонатить на LLM можно на Рутуб-канале [«Рассказы ветра»](https://rutube.ru/channel/36225989/).
+
 ---
 
 ## English
@@ -269,3 +273,7 @@ Notes:
 | Receiver does not bind | Out of scope here. See the [ELRS binding documentation](https://www.expresslrs.org/quick-start/binding/) |
 
 Building from source, code settings and internals are in [develop.md](develop.md).
+
+### Support the project
+
+You can donate to cover LLM costs on the Rutube channel [«Рассказы ветра»](https://rutube.ru/channel/36225989/).
